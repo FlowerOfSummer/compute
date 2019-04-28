@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>计算算式结果</title>
+	<script src="./js/vue.js"></script>
+</head>
+
+<body>
+	<div id="main">
+		<label for="request">请输入算式：</label><input type="text" name="request" id="" v-model="str">
+		<button @click="reset">重置</button>
+		<button @click="compute(str)">提交</button>
+		<label for="result">结果：</label><input type="text" name="result" id="" v-model="result">
+        <!-- 测验我的nums,和op是否存储成功 -->
+		<!-- <div>操作数依次是：{{nums}}</div>
+		<div>操作符依次是：{{op}}</div> -->
+
+	</div>
+	<script>
+		var vm = new Vue({
+			el: "#main",
+			data: {
+				str: '', //实时获取输入字符串
+				result: '', //存放计算结果
+				nums: [], //存放操作数
+				op: [] //存放操作符
+			},
+			methods: {
+				compute(str) {
+					// console.log(str);
+					//循环操作，将操作数和操作符分开
+					while (str.length) {
+						let num = parseInt(str);
+						this.nums.push(num);
+						let numstr = String(num);
+						str = str.substr(numstr.length);
+						// console.log(str);
+						if (str.length != 0) {
+							this.op.push(str.substring(0, 1));
+							str = str.substr(1);
+							// console.log(str);
+						}
+					}
+					// console.log(this.nums, this.op);
+					//找到‘*’或‘/’操作符
+					let index = 0;
+					let opr = '';
+					let result;
+					// console.log(111);
+					//当op数组不为空时调用searchOpr
+					while (this.op.length > 0) {
+						
+						// 调用函数，找到对应的操作符以及索引
+						let m = this.searchOpr(index,this.op);
+						index = m[0];
+						opr = m[1];
+						// 计算结果
+						if (opr === "*") {
+							// 计算单步结果
+							result = this.nums[index] * this.nums[index + 1];
+							// 将计算了的两个值从nums中删除，
+							this.nums.splice(index, 2);
+							// 并将单步结果加入对应的位置，保证先后顺序不乱
+							this.nums.splice(index, 0, result);
+							// 删除计算了的操作符
+							this.op.splice(index,1);
+							// console.log('*',this.nums,this.op);
+						} else if (opr === "/") {
+							result = this.nums[index]/ this.nums[index + 1];
+							this.nums.splice(index, 2);
+							this.nums.splice(index, 0, result);
+							this.op.splice(index,1);
+							// console.log('/',this.nums,this.op);
+						} else if (opr === "+") {
+							result = this.nums[index] + this.nums[index + 1];
+							this.nums.splice(index, 2);
+							this.nums.splice(index, 0, result);
+							this.op.splice(index,1);
+							// console.log('+',this.nums,this.op);
+						} else if (opr === "-") {
+							result = this.nums[index] - this.nums[index + 1];
+							this.nums.splice(index, 2);
+							this.nums.splice(index, 0, result);
+							this.op.splice(index,1);
+							// console.log('-',this.nums,this.op);
+						}
+					}
+					this.result=result;
+				},
+				// 选择操作符，并且找到操作符的索引
+				// 遍历操作符数组，先找到“*”和“/”，没有的话就从数组开头开始计算
+				searchOpr(index, op) {
+					let index1;
+					let opr = '';
+					if (op.includes("*","/")) {
+						for (let i = index; i < op.length; i++) {
+							if (op[i] === "*") {
+								opr = '*';
+								index1 = i;
+								break;
+							} else if (op[i] === "/") {
+								opr = '/';
+								index1 = i;
+								break;
+							}
+						}
+					} else{
+						index1 = 0;
+						opr = op[0];
+					}
+					return [index1, opr];
+				},
+				// 点击重置，清除我所有的数据，而不需要刷新页面
+				reset(){
+					this.nums=[];
+					this.op=[];
+					this.result="";
+					this.str="";
+				}
+			}
+		});
+	</script>
+</body>
+
+</html>
